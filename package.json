@@ -1,0 +1,9 @@
+{
+  "name": "scoundrel",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Scoundrel — solo roguelike card game",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
