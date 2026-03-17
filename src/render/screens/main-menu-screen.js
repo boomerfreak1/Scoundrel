@@ -13,7 +13,7 @@ export function drawMainMenu(ctx, w, h, data, hits) {
 
   const titleSize = Math.max(32, Math.min(w * 0.08, 56));
   drawTitle(ctx, "SCOUNDREL", cx, h * 0.14, "#f0c040", titleSize);
-  drawText(ctx, "A solo roguelike card game", cx, h * 0.14 + titleSize * 0.8, { color: "rgba(255,255,255,0.5)", size: 13 });
+  drawText(ctx, "A solo roguelike card game", cx, h * 0.14 + titleSize * 0.8, { color: "#0f1921", size: 13 });
 
   let y = h * 0.28;
 
@@ -32,8 +32,8 @@ export function drawMainMenu(ctx, w, h, data, hits) {
   drawButton(ctx, hits.daily, dailyLabel, dailyColor, "#6b4e2c");
   y += btnH + gap;
 
-  hits.enterSeed = centeredBtn(cx, y, btnW, btnH);
-  drawButton(ctx, hits.enterSeed, "Enter Seed", "#555", "#777");
+  hits.tutorial = centeredBtn(cx, y, btnW, btnH);
+  drawButton(ctx, hits.tutorial, "How to Play", "#6a5acd", "#4a3a9d");
   y += btnH + gap;
 
   hits.highScores = centeredBtn(cx, y, btnW, btnH);
@@ -46,10 +46,6 @@ export function drawMainMenu(ctx, w, h, data, hits) {
 
   hits.achievements = centeredBtn(cx, y, btnW, btnH);
   drawButton(ctx, hits.achievements, "Achievements", "#444", "#666");
-  y += btnH + gap;
-
-  hits.tutorial = centeredBtn(cx, y, btnW, btnH);
-  drawButton(ctx, hits.tutorial, "How to Play", "#6a5acd", "#4a3a9d");
   y += btnH + gap;
 
   hits.settings = centeredBtn(cx, y, btnW, btnH);

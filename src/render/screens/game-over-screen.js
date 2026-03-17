@@ -11,7 +11,8 @@ export function drawGameOver(ctx, w, h, data, hits) {
   let y = h * 0.08;
 
   // Title
-  drawTitle(ctx, isWin ? "Victory!" : "Defeated", cx, y, isWin ? "#f0c040" : "#f44336", Math.max(28, w * 0.06));
+  const titleSize = Math.max(32, Math.min(w * 0.08, 56));
+  drawTitle(ctx, isWin ? "Victory!" : "Defeated", cx, y, isWin ? "#f0c040" : "#f44336", titleSize);
   y += 44;
 
   // Score breakdown

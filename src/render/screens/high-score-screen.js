@@ -11,7 +11,7 @@ export function drawHighScores(ctx, w, h, data, hits) {
   const scores = data.scores || [];
   const startY = h * 0.13;
   const rowH = Math.min(32, (h * 0.65) / 10);
-  const tableW = Math.min(w * 0.9, 500);
+  const tableW = Math.min(w * 0.9, 400);
   const left = cx - tableW / 2;
   const fontSize = Math.max(11, rowH * 0.42);
 
@@ -19,7 +19,7 @@ export function drawHighScores(ctx, w, h, data, hits) {
   ctx.font = `bold ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
   ctx.fillStyle = "rgba(255,255,255,0.5)";
   ctx.textBaseline = "middle";
-  const cols = [left + 30, left + 70, left + tableW * 0.35, left + tableW * 0.55, left + tableW * 0.72, left + tableW * 0.92];
+  const cols = [left + 30, left + tableW * 0.25, left + tableW * 0.5, left + tableW * 0.7, left + tableW * 0.9];
   ctx.textAlign = "center";
   const headY = startY;
   ctx.fillText("#", cols[0], headY);
@@ -27,7 +27,6 @@ export function drawHighScores(ctx, w, h, data, hits) {
   ctx.fillText("Result", cols[2], headY);
   ctx.fillText("HP", cols[3], headY);
   ctx.fillText("Turns", cols[4], headY);
-  ctx.fillText("Seed", cols[5], headY);
 
   // Rows
   for (let i = 0; i < scores.length; i++) {
@@ -44,9 +43,6 @@ export function drawHighScores(ctx, w, h, data, hits) {
     ctx.fillText(s.outcome === "won" ? "\u{1F451}" : "\u{1F480}", cols[2], y);
     ctx.fillText(`${Math.max(0, s.health)}`, cols[3], y);
     ctx.fillText(`${s.turns}`, cols[4], y);
-    ctx.font = `${fontSize * 0.85}px monospace`;
-    ctx.fillStyle = "rgba(255,255,255,0.4)";
-    ctx.fillText(`${s.seed}`, cols[5], y);
   }
 
   if (scores.length === 0) {

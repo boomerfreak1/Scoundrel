@@ -2,6 +2,8 @@
 
 import { drawButton, centeredBtn, drawTitle, drawText } from "./ui-helpers.js";
 
+const BG_COLOR = "#0f1921";
+
 const PAGES = [
   {
     title: "Overview",
@@ -16,7 +18,7 @@ const PAGES = [
       { text: "You must resolve 3 of them." },
       { text: "The 4th card stays for the next room." },
       { text: "" },
-      { text: "Survive the entire dungeon to win!", opts: { color: "#f0c040", bold: true } },
+      { text: "Survive the entire dungeon to win!", opts: { bold: true } },
     ],
   },
   {
@@ -24,15 +26,15 @@ const PAGES = [
     lines: [
       { text: "The dungeon has three card types:", opts: { size: 15 } },
       { text: "" },
-      { text: "MONSTERS  (Clubs & Spades, ranks 2-14)", opts: { color: "#ef5350", bold: true } },
-      { text: "26 monsters that deal damage equal to their rank." },
+      { text: "MONSTERS  (Clubs & Spades, ranks 2-14)", opts: { bold: true } },
+      { text: "26 monsters that deal damage equal to rank." },
       { text: "Ace = 14, King = 13, Queen = 12, Jack = 11." },
       { text: "" },
-      { text: "WEAPONS  (Diamonds, ranks 2-10)", opts: { color: "#8ab4f8", bold: true } },
+      { text: "WEAPONS  (Diamonds, ranks 2-10)", opts: { bold: true } },
       { text: "9 weapons you can equip to reduce damage." },
       { text: "" },
-      { text: "POTIONS  (Hearts, ranks 2-10)", opts: { color: "#66bb6a", bold: true } },
-      { text: "9 potions that restore HP equal to their rank." },
+      { text: "POTIONS  (Hearts, ranks 2-10)", opts: { bold: true } },
+      { text: "9 potions that restore HP equal to rank." },
     ],
   },
   {
@@ -49,7 +51,7 @@ const PAGES = [
       { text: "The dots to the right of the board track" },
       { text: "how many cards you've resolved this turn." },
       { text: "" },
-      { text: "Choose wisely which card to leave behind!", opts: { color: "#f0c040" } },
+      { text: "Choose wisely which card to leave behind!", opts: { bold: true } },
     ],
   },
   {
@@ -57,11 +59,11 @@ const PAGES = [
     lines: [
       { text: "When you click a monster, you fight it." },
       { text: "" },
-      { text: "BAREHANDED:", opts: { color: "#ef5350", bold: true } },
+      { text: "BAREHANDED:", opts: { bold: true } },
       { text: "You take full damage equal to the monster's rank." },
       { text: "Example: A 9 of Clubs deals 9 damage." },
       { text: "" },
-      { text: "WITH WEAPON:", opts: { color: "#8ab4f8", bold: true } },
+      { text: "WITH WEAPON:", opts: { bold: true } },
       { text: "Damage = monster rank - weapon rank (min 0)." },
       { text: "Example: 9 monster vs 7 weapon = only 2 damage!" },
       { text: "" },
@@ -77,12 +79,12 @@ const PAGES = [
       { text: "Equipping a new one discards the old weapon" },
       { text: "along with all monsters it has slain." },
       { text: "" },
-      { text: "DEGRADATION:", opts: { color: "#f0c040", bold: true } },
+      { text: "DEGRADATION:", opts: { bold: true } },
       { text: "After killing a monster with your weapon," },
       { text: "it can only kill monsters of equal or" },
       { text: "LOWER rank than the last kill." },
       { text: "" },
-      { text: "Plan your fights from strongest to weakest!", opts: { color: "#f0c040" } },
+      { text: "Plan your fights from strongest to weakest!", opts: { bold: true } },
     ],
   },
   {
@@ -93,7 +95,7 @@ const PAGES = [
       { text: "Heals HP equal to the potion's rank.", opts: { bold: true } },
       { text: "HP cannot exceed 20 (the maximum)." },
       { text: "" },
-      { text: "LIMIT: Only ONE potion heals per turn.", opts: { color: "#f0c040", bold: true } },
+      { text: "LIMIT: Only ONE potion heals per turn.", opts: { bold: true } },
       { text: "If you use a second potion in the same turn," },
       { text: "it is wasted and gives no healing." },
       { text: "" },
@@ -111,7 +113,7 @@ const PAGES = [
       { text: "All 4 cards go to the bottom of the dungeon" },
       { text: "and a fresh room of 4 new cards is dealt." },
       { text: "" },
-      { text: "RESTRICTION:", opts: { color: "#f0c040", bold: true } },
+      { text: "RESTRICTION:", opts: { bold: true } },
       { text: "You cannot avoid two rooms in a row." },
       { text: "Use it strategically!" },
     ],
@@ -119,16 +121,16 @@ const PAGES = [
   {
     title: "Scoring",
     lines: [
-      { text: "WIN: Clear the entire dungeon.", opts: { color: "#66bb6a", bold: true } },
+      { text: "WIN: Clear the entire dungeon.", opts: { bold: true } },
       { text: "Score = remaining HP." },
       { text: "Bonus: if the last card you resolve is a potion," },
       { text: "its rank is added to your score!" },
       { text: "" },
-      { text: "LOSE: HP drops to 0 or below.", opts: { color: "#ef5350", bold: true } },
+      { text: "LOSE: HP drops to 0 or below.", opts: { bold: true } },
       { text: "Score = HP minus remaining monster values." },
       { text: "(Usually a negative number.)" },
       { text: "" },
-      { text: "Aim for the highest score. Good luck!", opts: { color: "#f0c040", bold: true, size: 15 } },
+      { text: "Aim for the highest score. Good luck!", opts: { bold: true, size: 15 } },
     ],
   },
 ];
@@ -142,25 +144,56 @@ export function drawTutorial(ctx, w, h, data, hits) {
 
   const cx = w / 2;
 
-  // Title
-  drawTitle(ctx, current.title, cx, h * 0.1, "#f0c040", Math.max(24, w * 0.04));
+  // Light brown card background for readability
+  const cardW = Math.min(480, w * 0.75);
+  const cardH = h * 0.72;
+  const cardX = cx - cardW / 2;
+  const cardY = h * 0.06;
+  const cardR = 10;
+
+  ctx.save();
+  ctx.fillStyle = "#d4c4a0";
+  ctx.beginPath();
+  ctx.moveTo(cardX + cardR, cardY);
+  ctx.lineTo(cardX + cardW - cardR, cardY);
+  ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + cardR);
+  ctx.lineTo(cardX + cardW, cardY + cardH - cardR);
+  ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - cardR, cardY + cardH);
+  ctx.lineTo(cardX + cardR, cardY + cardH);
+  ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - cardR);
+  ctx.lineTo(cardX, cardY + cardR);
+  ctx.quadraticCurveTo(cardX, cardY, cardX + cardR, cardY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Subtle border
+  ctx.strokeStyle = "#a08860";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+
+  // Title — same size as main menu "SCOUNDREL"
+  const titleSize = Math.max(32, Math.min(w * 0.08, 56));
+  drawTitle(ctx, current.title, cx, cardY + 36, BG_COLOR, titleSize);
 
   // Page indicator
-  drawText(ctx, `${page + 1} / ${totalPages}`, cx, h * 0.16, { color: "rgba(255,255,255,0.4)", size: 12 });
+  drawText(ctx, `${page + 1} / ${totalPages}`, cx, cardY + 60, { color: "#8a7a5a", size: 12 });
 
-  // Content lines
+  // Content lines — dark text on the light card
   const lineH = 20;
-  let y = h * 0.22;
+  let y = cardY + 82;
   for (const line of current.lines) {
     if (line.text === "") {
       y += lineH * 0.5;
       continue;
     }
     const opts = {
-      color: "rgba(255,255,255,0.85)",
+      color: BG_COLOR,
       size: 14,
       ...line.opts,
     };
+    // Override any color to stay dark
+    opts.color = BG_COLOR;
     drawText(ctx, line.text, cx, y, opts);
     y += lineH;
   }
