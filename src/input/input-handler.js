@@ -69,6 +69,10 @@ export function setupInputHandler(canvas, getState, getLayout, getCardRegistry, 
       startVariant: "startVariant",
       replay: "replay",
       share: "dailyShare",
+      tutorial: "tutorial",
+      nextPage: "tutorialNext",
+      prevPage: "tutorialPrev",
+      back2: "menu",
     };
 
     for (const [key, action] of Object.entries(actionMap)) {

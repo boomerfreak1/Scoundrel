@@ -28,6 +28,7 @@ import { drawAchievements } from "./render/screens/achievements-screen.js";
 import { drawDaily } from "./render/screens/daily-screen.js";
 import { drawVariantSelect } from "./render/screens/variant-select-screen.js";
 import { drawReplayControls } from "./render/screens/replay-screen.js";
+import { drawTutorial } from "./render/screens/tutorial-screen.js";
 
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
@@ -47,6 +48,7 @@ let layout = null;
 let lastTime = 0;
 let gameLog = [];
 let commandLog = [];
+let tutorialPage = 0;
 let currentScreen = "menu";
 let gameOverData = null;
 let isDailyGame = false;
@@ -394,6 +396,16 @@ function handleScreenAction(action) {
     case "settings":
       visualState.settings.showPanel = true;
       break;
+    case "tutorial":
+      tutorialPage = 0;
+      navigateTo("tutorial");
+      break;
+    case "tutorialNext":
+      tutorialPage++;
+      break;
+    case "tutorialPrev":
+      if (tutorialPage > 0) tutorialPage--;
+      break;
     case "clearScores":
       if (confirm("Clear all high scores?")) highScores.clear();
       break;
@@ -542,6 +554,9 @@ function gameLoop(timestamp) {
       }
       case "variant_select":
         drawVariantSelect(ctx, w, h, { variants: VARIANTS, selectedVariant }, hits);
+        break;
+      case "tutorial":
+        drawTutorial(ctx, w, h, { page: tutorialPage }, hits);
         break;
     }
     visualState.screenHits = hits;

@@ -48,6 +48,10 @@ export function drawMainMenu(ctx, w, h, data, hits) {
   drawButton(ctx, hits.achievements, "Achievements", "#444", "#666");
   y += btnH + gap;
 
+  hits.tutorial = centeredBtn(cx, y, btnW, btnH);
+  drawButton(ctx, hits.tutorial, "How to Play", "#6a5acd", "#4a3a9d");
+  y += btnH + gap;
+
   hits.settings = centeredBtn(cx, y, btnW, btnH);
   drawButton(ctx, hits.settings, "Settings", "#333", "#555");
 
