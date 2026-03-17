@@ -3,7 +3,8 @@
 import { drawBackground, drawButton, centeredBtn, drawTitle, drawText } from "./ui-helpers.js";
 
 export function drawMainMenu(ctx, w, h, data, hits) {
-  drawBackground(ctx, w, h);
+  // Clear instead of solid fill so the background GIF shows through
+  ctx.clearRect(0, 0, w, h);
 
   const cx = w / 2;
   const btnW = Math.min(220, w * 0.6);
