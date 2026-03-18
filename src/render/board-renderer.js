@@ -302,6 +302,11 @@ export function render(ctx, state, cardRegistry, layout, visualState, animator, 
     drawBarehandedPrompt(ctx, state, layout, visualState);
   }
 
+  // Potion waste confirmation prompt
+  if (visualState.showPotionWasteChoice !== null && state.gameStatus === "playing") {
+    drawPotionWastePrompt(ctx, state, layout, visualState);
+  }
+
   // Settings overlay
   if (visualState.settings.showPanel) {
     drawSettingsPanel(ctx, layout, visualState);
@@ -352,11 +357,14 @@ function drawRoomCards(ctx, state, cardRegistry, layout, visualState, animator) 
 
     const isPlaying = state.gameStatus === "playing";
     const isPromptTarget = visualState.showBarehandedChoice !== null && visualState.showBarehandedChoice === i;
+    const isPotionPrompt = visualState.showPotionWasteChoice !== null && visualState.showPotionWasteChoice === i;
     const isHovered = visualState.hoverCardIndex === i && isPlaying;
+    const isPotionUsed = state.potionUsedThisTurn && card.type === "potion";
 
     drawCard(ctx, card, slot.x, slot.y, slot.width, slot.height, {
-      highlighted: isPlaying && !isPromptTarget,
-      selected: isPromptTarget,
+      highlighted: isPlaying && !isPromptTarget && !isPotionPrompt,
+      selected: isPromptTarget || isPotionPrompt,
+      dimmed: isPotionUsed && !isPotionPrompt,
       scaleX: isHovered ? 1.04 : 1,
       scaleY: isHovered ? 1.04 : 1,
     });
@@ -514,6 +522,36 @@ function drawBarehandedPrompt(ctx, state, layout, visualState) {
 
   visualState.weaponButtonRect = { x: weaponBtnX, y: btnY, width: btnW, height: btnH };
   visualState.barehandedButtonRect = { x: bareBtnX, y: btnY, width: btnW, height: btnH };
+}
+
+function drawPotionWastePrompt(ctx, state, layout, visualState) {
+  const cardIndex = visualState.showPotionWasteChoice;
+  const slot = layout.room[cardIndex];
+  if (!slot) return;
+
+  const btnW = layout.barehandedButton.width;
+  const btnH = layout.barehandedButton.height;
+  const gap = 6;
+  const btnY = slot.y + slot.height + gap;
+  const centerX = slot.x + slot.width / 2;
+
+  // Warning text
+  ctx.save();
+  ctx.font = `bold 10px "Helvetica Neue", Arial, sans-serif`;
+  ctx.fillStyle = "#f0c040";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("No healing (already used one)", centerX, btnY - 4);
+  ctx.restore();
+
+  const useBtnX = centerX - btnW - gap / 2;
+  const cancelBtnX = centerX + gap / 2;
+
+  drawPromptButton(ctx, useBtnX, btnY, btnW, btnH, "Use Anyway", "#8b3030");
+  drawPromptButton(ctx, cancelBtnX, btnY, btnW, btnH, "Cancel", "#555");
+
+  visualState.potionUseAnywayRect = { x: useBtnX, y: btnY, width: btnW, height: btnH };
+  visualState.potionCancelRect = { x: cancelBtnX, y: btnY, width: btnW, height: btnH };
 }
 
 function drawPromptButton(ctx, x, y, w, h, label, color) {

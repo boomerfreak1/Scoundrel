@@ -175,6 +175,30 @@ export function setupInputHandler(canvas, getState, getLayout, getCardRegistry, 
       return;
     }
 
+    // Potion waste confirmation prompt
+    if (vs.showPotionWasteChoice !== null) {
+      const cardIndex = vs.showPotionWasteChoice;
+      if (vs.potionUseAnywayRect && hitTest(x, y, vs.potionUseAnywayRect)) {
+        vs.showPotionWasteChoice = null;
+        vs.potionUseAnywayRect = null;
+        vs.potionCancelRect = null;
+        audio?.play("buttonClick");
+        onCommand({ type: "SELECT_CARD", payload: { cardIndex } });
+        return;
+      }
+      if (vs.potionCancelRect && hitTest(x, y, vs.potionCancelRect)) {
+        vs.showPotionWasteChoice = null;
+        vs.potionUseAnywayRect = null;
+        vs.potionCancelRect = null;
+        audio?.play("buttonClick");
+        return;
+      }
+      vs.showPotionWasteChoice = null;
+      vs.potionUseAnywayRect = null;
+      vs.potionCancelRect = null;
+      return;
+    }
+
     if (canAvoidRoom(state) && hitTest(x, y, layout.avoidButton)) {
       audio?.play("buttonClick");
       onCommand({ type: "AVOID_ROOM", payload: {} });
@@ -196,6 +220,10 @@ export function setupInputHandler(canvas, getState, getLayout, getCardRegistry, 
 
         if (cardType === "monster") {
           onCommand({ type: "FIGHT_BAREHANDED", payload: { cardIndex: i } });
+        } else if (cardType === "potion" && state.potionUsedThisTurn) {
+          // Show waste confirmation
+          vs.showPotionWasteChoice = i;
+          audio?.play("buttonClick");
         } else {
           onCommand({ type: "SELECT_CARD", payload: { cardIndex: i } });
         }

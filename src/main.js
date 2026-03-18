@@ -71,8 +71,11 @@ if (savedTheme) setTheme(savedTheme);
 
 const visualState = {
   showBarehandedChoice: null,
+  showPotionWasteChoice: null,
   weaponButtonRect: null,
   barehandedButtonRect: null,
+  potionUseAnywayRect: null,
+  potionCancelRect: null,
   displayHealth: 20,
   hoverCardIndex: null,
   settings: {
@@ -214,8 +217,11 @@ function handleCommand(command) {
     commandLog.push({ type: command.type, payload: command.payload });
 
     visualState.showBarehandedChoice = null;
+    visualState.showPotionWasteChoice = null;
     visualState.weaponButtonRect = null;
     visualState.barehandedButtonRect = null;
+    visualState.potionUseAnywayRect = null;
+    visualState.potionCancelRect = null;
     visualState.hoverCardIndex = null;
 
     if (command.type === "NEW_GAME") {
