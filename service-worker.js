@@ -1,4 +1,4 @@
-const CACHE_NAME = "scoundrel-v1";
+const CACHE_NAME = "scoundrel-v2";
 const ASSETS = [
   "/",
   "/index.html",
@@ -15,6 +15,7 @@ const ASSETS = [
   "/src/logic/variants.js",
   "/src/render/layout.js",
   "/src/render/card-renderer.js",
+  "/src/render/card-images.js",
   "/src/render/board-renderer.js",
   "/src/render/hud-renderer.js",
   "/src/render/animation.js",
@@ -29,6 +30,7 @@ const ASSETS = [
   "/src/render/screens/daily-screen.js",
   "/src/render/screens/variant-select-screen.js",
   "/src/render/screens/replay-screen.js",
+  "/src/render/screens/tutorial-screen.js",
   "/src/input/input-handler.js",
   "/src/audio/audio-manager.js",
   "/src/persist/storage-adapter.js",
@@ -39,6 +41,18 @@ const ASSETS = [
   "/src/persist/replay.js",
   "/manifest.json",
   "/assets/icons/icon.svg",
+  "/assets/ui/background.gif",
+  "/assets/ui/button_bg.png",
+  "/assets/ui/room_banner.png",
+  "/assets/ui/label_banner.png",
+  "/assets/ui/healthbarbase.png",
+  "/assets/ui/healthbarred.png",
+  "/assets/ui/gear.png",
+  "/assets/ui/sound.png",
+  "/assets/ui/xmark.png",
+  "/assets/ui/dot_filled.png",
+  "/assets/ui/dot_empty.png",
+  "/assets/cards/card_back.png",
 ];
 
 self.addEventListener("install", (e) => {
@@ -57,6 +71,6 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   e.respondWith(
-    caches.match(e.request).then((cached) => cached || fetch(e.request))
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
