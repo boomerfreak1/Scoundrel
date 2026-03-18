@@ -10,6 +10,7 @@ let gearIcon = null;
 let soundIcon = null;
 let xmarkIcon = null;
 let bannerImg = null;
+let buttonBgImg = null;
 let labelBannerImg = null;
 let dotFilled = null;
 let dotEmpty = null;
@@ -63,6 +64,9 @@ export async function loadCardImages() {
     );
     promises.push(
       loadImage("assets/ui/room_banner.png").then((img) => { bannerImg = img; })
+    );
+    promises.push(
+      loadImage("assets/ui/button_bg.png").then((img) => { buttonBgImg = img; })
     );
     promises.push(
       loadImage("assets/ui/label_banner.png").then((img) => { labelBannerImg = img; })
@@ -131,6 +135,10 @@ export function getDotFilledImage() {
 
 export function getDotEmptyImage() {
   return dotEmpty;
+}
+
+export function getButtonBgImage() {
+  return buttonBgImg;
 }
 
 export function getLabelBannerImage() {

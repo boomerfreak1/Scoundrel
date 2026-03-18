@@ -1,31 +1,38 @@
 // Shared UI drawing helpers for screen renderers.
 
 import { getTheme } from "../themes.js";
+import { getButtonBgImage } from "../card-images.js";
 
 export function drawBackground(ctx, w, h) {
   ctx.fillStyle = getTheme().feltColor;
   ctx.fillRect(0, 0, w, h);
 }
 
-export function drawButton(ctx, rect, label, bg = "#4caf50", border = "#388e3c", textColor = "#fff") {
-  const r = 6;
+export function drawButton(ctx, rect, label, bg = "#4caf50", border = "#388e3c", textColor = "#0f1921") {
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(rect.x + r, rect.y);
-  ctx.lineTo(rect.x + rect.width - r, rect.y);
-  ctx.quadraticCurveTo(rect.x + rect.width, rect.y, rect.x + rect.width, rect.y + r);
-  ctx.lineTo(rect.x + rect.width, rect.y + rect.height - r);
-  ctx.quadraticCurveTo(rect.x + rect.width, rect.y + rect.height, rect.x + rect.width - r, rect.y + rect.height);
-  ctx.lineTo(rect.x + r, rect.y + rect.height);
-  ctx.quadraticCurveTo(rect.x, rect.y + rect.height, rect.x, rect.y + rect.height - r);
-  ctx.lineTo(rect.x, rect.y + r);
-  ctx.quadraticCurveTo(rect.x, rect.y, rect.x + r, rect.y);
-  ctx.closePath();
-  ctx.fillStyle = bg;
-  ctx.fill();
-  ctx.strokeStyle = border;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  const btnImg = getButtonBgImage();
+  if (btnImg) {
+    ctx.drawImage(btnImg, rect.x, rect.y, rect.width, rect.height);
+  } else {
+    // Fallback: colored rectangle
+    const r = 6;
+    ctx.beginPath();
+    ctx.moveTo(rect.x + r, rect.y);
+    ctx.lineTo(rect.x + rect.width - r, rect.y);
+    ctx.quadraticCurveTo(rect.x + rect.width, rect.y, rect.x + rect.width, rect.y + r);
+    ctx.lineTo(rect.x + rect.width, rect.y + rect.height - r);
+    ctx.quadraticCurveTo(rect.x + rect.width, rect.y + rect.height, rect.x + rect.width - r, rect.y + rect.height);
+    ctx.lineTo(rect.x + r, rect.y + rect.height);
+    ctx.quadraticCurveTo(rect.x, rect.y + rect.height, rect.x, rect.y + rect.height - r);
+    ctx.lineTo(rect.x, rect.y + r);
+    ctx.quadraticCurveTo(rect.x, rect.y, rect.x + r, rect.y);
+    ctx.closePath();
+    ctx.fillStyle = bg;
+    ctx.fill();
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
   const fontSize = Math.max(13, rect.height * 0.4);
   ctx.font = `bold ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
   ctx.fillStyle = textColor;
