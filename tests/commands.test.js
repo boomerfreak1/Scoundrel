@@ -204,6 +204,102 @@ describe("processCommand: turn completion", () => {
   });
 });
 
+describe("processCommand: HONE_WEAPON", () => {
+  it("hones weapon successfully", () => {
+    const state = stateWithRoom(
+      ["diamonds_8", "clubs_5", "spades_3", "hearts_4"],
+      { equippedWeapon: "diamonds_7", slainByWeapon: ["clubs_4"] }
+    );
+    const { state: next, result } = processCommand(state, {
+      type: "HONE_WEAPON",
+      payload: { cardIndex: 0 },
+    });
+    assert.equal(result.success, true);
+    assert.equal(next.equippedWeapon, "diamonds_6"); // rank dropped by 1
+    assert.deepEqual(next.slainByWeapon, []); // degradation reset
+    assert.ok(!next.room.includes("diamonds_8"));
+    assert.ok(next.discard.includes("diamonds_8"));
+  });
+
+  it("generates WEAPON_HONED event", () => {
+    const state = stateWithRoom(
+      ["diamonds_8", "clubs_5", "spades_3", "hearts_4"],
+      { equippedWeapon: "diamonds_7", slainByWeapon: ["clubs_4"] }
+    );
+    const { result } = processCommand(state, {
+      type: "HONE_WEAPON",
+      payload: { cardIndex: 0 },
+    });
+    const honeEvent = result.events.find((e) => e.type === "WEAPON_HONED");
+    assert.ok(honeEvent);
+    assert.equal(honeEvent.cardId, "diamonds_8");
+    assert.equal(honeEvent.weaponId, "diamonds_7");
+    assert.equal(honeEvent.newWeaponId, "diamonds_6");
+  });
+
+  it("fails when diamond rank <= degradation cap", () => {
+    const state = stateWithRoom(
+      ["diamonds_3", "clubs_5", "spades_3", "hearts_4"],
+      { equippedWeapon: "diamonds_7", slainByWeapon: ["clubs_6"] }
+    );
+    const { result } = processCommand(state, {
+      type: "HONE_WEAPON",
+      payload: { cardIndex: 0 },
+    });
+    assert.equal(result.success, false);
+  });
+
+  it("fails when no degradation exists", () => {
+    const state = stateWithRoom(
+      ["diamonds_8", "clubs_5", "spades_3", "hearts_4"],
+      { equippedWeapon: "diamonds_7" }
+    );
+    const { result } = processCommand(state, {
+      type: "HONE_WEAPON",
+      payload: { cardIndex: 0 },
+    });
+    assert.equal(result.success, false);
+  });
+
+  it("fails on non-weapon card", () => {
+    const state = stateWithRoom(
+      ["clubs_5", "spades_3", "diamonds_8", "hearts_4"],
+      { equippedWeapon: "diamonds_7", slainByWeapon: ["clubs_4"] }
+    );
+    const { result } = processCommand(state, {
+      type: "HONE_WEAPON",
+      payload: { cardIndex: 0 },
+    });
+    assert.equal(result.success, false);
+  });
+
+  it("counts as a resolved card toward turn completion", () => {
+    // Room has 4 cards, resolve 2 others first, then hone = 3 resolved, turn completes
+    let state = stateWithRoom(
+      ["hearts_3", "hearts_4", "diamonds_8", "clubs_5"],
+      { equippedWeapon: "diamonds_7", slainByWeapon: ["clubs_4"] }
+    );
+    // Resolve 2 potions first
+    ({ state } = processCommand(state, {
+      type: "SELECT_CARD",
+      payload: { cardIndex: 0 },
+    }));
+    ({ state } = processCommand(state, {
+      type: "SELECT_CARD",
+      payload: { cardIndex: 0 },
+    }));
+    assert.equal(state.cardsResolvedThisTurn, 2);
+    // Now hone the diamond (3rd resolve)
+    const { state: next, result } = processCommand(state, {
+      type: "HONE_WEAPON",
+      payload: { cardIndex: 0 },
+    });
+    assert.equal(result.success, true);
+    assert.equal(next.cardsResolvedThisTurn, 0); // reset after turn complete
+    assert.equal(next.turnCount, 1);
+  });
+});
+
 describe("processCommand: game over", () => {
   it("command on a finished game returns error", () => {
     const state = stateWithRoom(["clubs_5"], { gameStatus: "won" });

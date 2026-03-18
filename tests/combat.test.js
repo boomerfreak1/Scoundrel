@@ -2,12 +2,14 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   canUseWeapon,
+  canHoneWeapon,
   calculateWeaponDamage,
   calculateBarehandedDamage,
   resolveMonsterWithWeapon,
   resolveMonsterBarehanded,
   resolveWeapon,
   resolvePotion,
+  honeWeapon,
 } from "../src/logic/combat.js";
 
 function makeState(overrides = {}) {
@@ -128,5 +130,106 @@ describe("resolvePotion", () => {
     const state = makeState({ health: 18 });
     const next = resolvePotion(state, "hearts_5");
     assert.equal(next.health, 20);
+  });
+});
+
+describe("canHoneWeapon", () => {
+  it("returns false with no weapon equipped", () => {
+    const state = makeState();
+    assert.equal(canHoneWeapon(state, "diamonds_8"), false);
+  });
+
+  it("returns false when no monsters slain (no degradation)", () => {
+    const state = makeState({ equippedWeapon: "diamonds_7" });
+    assert.equal(canHoneWeapon(state, "diamonds_8"), false);
+  });
+
+  it("returns false when diamond rank <= degradation cap", () => {
+    const state = makeState({
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_6"],
+    });
+    assert.equal(canHoneWeapon(state, "diamonds_5"), false);
+    assert.equal(canHoneWeapon(state, "diamonds_6"), false);
+  });
+
+  it("returns true when diamond rank > degradation cap", () => {
+    const state = makeState({
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_6"],
+    });
+    assert.equal(canHoneWeapon(state, "diamonds_8"), true);
+  });
+
+  it("returns false when weapon rank is 1", () => {
+    const state = makeState({
+      equippedWeapon: "diamonds_1",
+      slainByWeapon: ["clubs_3"],
+    });
+    assert.equal(canHoneWeapon(state, "diamonds_5"), false);
+  });
+
+  it("returns false when weaponDegradation is disabled", () => {
+    const state = makeState({
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_4"],
+      variantConfig: { weaponDegradation: false },
+    });
+    assert.equal(canHoneWeapon(state, "diamonds_8"), false);
+  });
+
+  it("uses last slain monster rank as degradation cap", () => {
+    const state = makeState({
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_10", "spades_4"],
+    });
+    // Last slain is rank 4, diamond rank 5 > 4
+    assert.equal(canHoneWeapon(state, "diamonds_5"), true);
+    // Diamond rank 3 <= 4
+    assert.equal(canHoneWeapon(state, "diamonds_3"), false);
+  });
+});
+
+describe("honeWeapon", () => {
+  it("clears slainByWeapon", () => {
+    const state = makeState({
+      room: ["diamonds_8", "clubs_5", "hearts_3", "spades_2"],
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_4"],
+    });
+    const next = honeWeapon(state, "diamonds_8");
+    assert.deepEqual(next.slainByWeapon, []);
+  });
+
+  it("reduces weapon rank by 1", () => {
+    const state = makeState({
+      room: ["diamonds_8", "clubs_5", "hearts_3", "spades_2"],
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_4"],
+    });
+    const next = honeWeapon(state, "diamonds_8");
+    assert.equal(next.equippedWeapon, "diamonds_6");
+  });
+
+  it("removes diamond from room and adds to discard", () => {
+    const state = makeState({
+      room: ["diamonds_8", "clubs_5", "hearts_3", "spades_2"],
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_4"],
+    });
+    const next = honeWeapon(state, "diamonds_8");
+    assert.ok(!next.room.includes("diamonds_8"));
+    assert.ok(next.discard.includes("diamonds_8"));
+  });
+
+  it("increments cardsResolvedThisTurn", () => {
+    const state = makeState({
+      room: ["diamonds_8", "clubs_5", "hearts_3", "spades_2"],
+      equippedWeapon: "diamonds_7",
+      slainByWeapon: ["clubs_4"],
+      cardsResolvedThisTurn: 1,
+    });
+    const next = honeWeapon(state, "diamonds_8");
+    assert.equal(next.cardsResolvedThisTurn, 2);
   });
 });

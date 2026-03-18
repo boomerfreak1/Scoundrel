@@ -5,10 +5,12 @@ import { createInitialState } from "./state.js";
 import { typeFromId, rankFromId } from "./card.js";
 import {
   canUseWeapon,
+  canHoneWeapon,
   resolveMonsterWithWeapon,
   resolveMonsterBarehanded,
   resolveWeapon,
   resolvePotion,
+  honeWeapon,
   calculateWeaponDamage,
   calculateBarehandedDamage,
 } from "./combat.js";
@@ -32,6 +34,8 @@ export function processCommand(state, command) {
       return handleSelectCard(state, payload);
     case "FIGHT_BAREHANDED":
       return handleFightBarehanded(state, payload);
+    case "HONE_WEAPON":
+      return handleHoneWeapon(state, payload);
     case "AVOID_ROOM":
       return handleAvoidRoom(state);
     default:
@@ -127,6 +131,32 @@ function handleFightBarehanded(state, payload) {
   const events = [
     { type: "MONSTER_SLAIN", cardId, withWeapon: false },
     { type: "DAMAGE_TAKEN", amount: damage },
+  ];
+
+  return finalize(newState, events);
+}
+
+function handleHoneWeapon(state, payload) {
+  if (state.gameStatus !== "playing") return fail(state, "Game is over");
+
+  const { cardIndex } = payload;
+  if (cardIndex < 0 || cardIndex >= state.room.length) {
+    return fail(state, "Invalid card index");
+  }
+
+  const cardId = state.room[cardIndex];
+  if (typeFromId(cardId) !== "weapon") {
+    return fail(state, "Card is not a weapon");
+  }
+
+  if (!canHoneWeapon(state, cardId)) {
+    return fail(state, "Cannot hone weapon with this diamond");
+  }
+
+  const oldWeaponId = state.equippedWeapon;
+  const newState = honeWeapon(state, cardId);
+  const events = [
+    { type: "WEAPON_HONED", cardId, weaponId: oldWeaponId, newWeaponId: newState.equippedWeapon },
   ];
 
   return finalize(newState, events);

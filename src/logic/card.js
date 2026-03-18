@@ -35,6 +35,10 @@ export function typeFromId(cardId) {
   return getCardType(suitFromId(cardId));
 }
 
+export function makeCardId(suit, rank) {
+  return `${suit}_${rank}`;
+}
+
 export function createCard(suit, rank) {
   return {
     id: `${suit}_${rank}`,

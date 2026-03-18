@@ -307,6 +307,11 @@ export function render(ctx, state, cardRegistry, layout, visualState, animator, 
     drawPotionWastePrompt(ctx, state, layout, visualState);
   }
 
+  // Weapon equip vs hone choice prompt
+  if (visualState.showWeaponChoice !== null && state.gameStatus === "playing") {
+    drawWeaponChoicePrompt(ctx, state, layout, visualState);
+  }
+
   // Settings overlay
   if (visualState.settings.showPanel) {
     drawSettingsPanel(ctx, layout, visualState);
@@ -358,12 +363,13 @@ function drawRoomCards(ctx, state, cardRegistry, layout, visualState, animator) 
     const isPlaying = state.gameStatus === "playing";
     const isPromptTarget = visualState.showBarehandedChoice !== null && visualState.showBarehandedChoice === i;
     const isPotionPrompt = visualState.showPotionWasteChoice !== null && visualState.showPotionWasteChoice === i;
+    const isWeaponPrompt = visualState.showWeaponChoice !== null && visualState.showWeaponChoice === i;
     const isHovered = visualState.hoverCardIndex === i && isPlaying;
     const isPotionUsed = state.potionUsedThisTurn && card.type === "potion";
 
     drawCard(ctx, card, slot.x, slot.y, slot.width, slot.height, {
-      highlighted: isPlaying && !isPromptTarget && !isPotionPrompt,
-      selected: isPromptTarget || isPotionPrompt,
+      highlighted: isPlaying && !isPromptTarget && !isPotionPrompt && !isWeaponPrompt,
+      selected: isPromptTarget || isPotionPrompt || isWeaponPrompt,
       dimmed: isPotionUsed && !isPotionPrompt,
       scaleX: isHovered ? 1.04 : 1,
       scaleY: isHovered ? 1.04 : 1,
@@ -534,24 +540,62 @@ function drawPotionWastePrompt(ctx, state, layout, visualState) {
   const gap = 6;
   const btnY = slot.y + slot.height + gap;
   const centerX = slot.x + slot.width / 2;
+  const isWaste = state.potionUsedThisTurn;
 
-  // Warning text
+  // Warning/info text
   ctx.save();
   ctx.font = `bold 10px "Helvetica Neue", Arial, sans-serif`;
-  ctx.fillStyle = "#f0c040";
+  ctx.fillStyle = isWaste ? "#f0c040" : "#66bb6a";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText("No healing (already used one)", centerX, btnY - 4);
+  ctx.fillText(
+    isWaste ? "No healing (already used one)" : "Use your one potion for this room?",
+    centerX, btnY - 4
+  );
   ctx.restore();
 
   const useBtnX = centerX - btnW - gap / 2;
   const cancelBtnX = centerX + gap / 2;
 
-  drawPromptButton(ctx, useBtnX, btnY, btnW, btnH, "Use Anyway", "#8b3030");
+  drawPromptButton(ctx, useBtnX, btnY, btnW, btnH, isWaste ? "Use Anyway" : "Drink", isWaste ? "#8b3030" : "#4caf50");
   drawPromptButton(ctx, cancelBtnX, btnY, btnW, btnH, "Cancel", "#555");
 
   visualState.potionUseAnywayRect = { x: useBtnX, y: btnY, width: btnW, height: btnH };
   visualState.potionCancelRect = { x: cancelBtnX, y: btnY, width: btnW, height: btnH };
+}
+
+function drawWeaponChoicePrompt(ctx, state, layout, visualState) {
+  const cardIndex = visualState.showWeaponChoice;
+  const slot = layout.room[cardIndex];
+  if (!slot) return;
+
+  const btnW = layout.barehandedButton.width;
+  const btnH = layout.barehandedButton.height;
+  const gap = 6;
+  const btnY = slot.y + slot.height + gap;
+  const centerX = slot.x + slot.width / 2;
+
+  // Info text showing the tradeoff
+  const weaponRank = rankFromId(state.equippedWeapon);
+  ctx.save();
+  ctx.font = `bold 10px "Helvetica Neue", Arial, sans-serif`;
+  ctx.fillStyle = "#f0c040";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText(
+    `Hone: Rank ${weaponRank} → ${weaponRank - 1}, reset degradation`,
+    centerX, btnY - 4
+  );
+  ctx.restore();
+
+  const equipBtnX = centerX - btnW - gap / 2;
+  const honeBtnX = centerX + gap / 2;
+
+  drawPromptButton(ctx, equipBtnX, btnY, btnW, btnH, "Equip", "#2a6496");
+  drawPromptButton(ctx, honeBtnX, btnY, btnW, btnH, "Hone", "#b87333");
+
+  visualState.equipButtonRect = { x: equipBtnX, y: btnY, width: btnW, height: btnH };
+  visualState.honeButtonRect = { x: honeBtnX, y: btnY, width: btnW, height: btnH };
 }
 
 function drawPromptButton(ctx, x, y, w, h, label, color) {

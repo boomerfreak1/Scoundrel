@@ -1,7 +1,7 @@
 // Combat resolution — pure functions for damage calculation.
 // Zero browser dependencies.
 
-import { rankFromId, typeFromId } from "./card.js";
+import { rankFromId, typeFromId, suitFromId, makeCardId } from "./card.js";
 import { getConfig } from "./variants.js";
 
 export function canUseWeapon(state, monsterCardId) {
@@ -65,6 +65,31 @@ export function resolveWeapon(state, weaponCardId) {
     slainByWeapon: [],
     cardsResolvedThisTurn: state.cardsResolvedThisTurn + 1,
     lastResolvedCardId: weaponCardId,
+  };
+}
+
+export function canHoneWeapon(state, diamondCardId) {
+  if (!state.equippedWeapon) return false;
+  const config = getConfig(state);
+  if (!config.weaponDegradation) return false;
+  if (state.slainByWeapon.length === 0) return false;
+  if (rankFromId(state.equippedWeapon) <= 1) return false;
+  const lastSlainRank = rankFromId(state.slainByWeapon[state.slainByWeapon.length - 1]);
+  return rankFromId(diamondCardId) > lastSlainRank;
+}
+
+export function honeWeapon(state, diamondCardId) {
+  const weaponRank = rankFromId(state.equippedWeapon);
+  const weaponSuit = suitFromId(state.equippedWeapon);
+  const newWeaponId = makeCardId(weaponSuit, weaponRank - 1);
+  return {
+    ...state,
+    equippedWeapon: newWeaponId,
+    slainByWeapon: [],
+    room: state.room.filter((id) => id !== diamondCardId),
+    discard: [...state.discard, diamondCardId],
+    cardsResolvedThisTurn: state.cardsResolvedThisTurn + 1,
+    lastResolvedCardId: diamondCardId,
   };
 }
 

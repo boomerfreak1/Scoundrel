@@ -72,6 +72,13 @@ export function createAudioManager() {
       playTone(900, 0.15, "sine", 0.15);
       playNoise(0.05, 0.08, 8000);
     },
+    weaponHone(opts = {}) {
+      // Metallic sharpening: rising scrape + ring
+      playNoise(0.1, 0.15, 6000);
+      playTone(500, 0.08, "triangle", 0.12);
+      playTone(800, 0.12, "sine", 0.1);
+      playTone(1100, 0.15, "triangle", 0.08);
+    },
     combatHit(opts = {}) {
       const vol = opts.volume ?? 0.3;
       playNoise(0.12, vol * 0.5, 2000);

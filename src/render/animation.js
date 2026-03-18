@@ -180,6 +180,41 @@ export function queueTransitions(animator, prevState, newState, events, layout, 
         break;
       }
 
+      case "WEAPON_HONED": {
+        // Diamond slides to discard
+        const honeFrom = prevRoomSlot(event.cardId) || layout.dungeon;
+        const honeTo = layout.discard;
+        animator.initCard(event.cardId, honeFrom.x, honeFrom.y);
+        animator.addTween(event.cardId, "x", honeFrom.x, honeTo.x, dur(400), "easeOutCubic", delay);
+        animator.addTween(event.cardId, "y", honeFrom.y, honeTo.y, dur(400), "easeOutCubic", delay);
+        animator.addTween(event.cardId, "opacity", 1, 0.3, dur(400), "linear", delay);
+        // Weapon glow + bounce to show it was honed
+        const wSlot = layout.weaponSlot;
+        if (wSlot && event.weaponId) {
+          animator.initCard(event.weaponId, wSlot.x, wSlot.y);
+          animator.addTween(event.weaponId, "glow", 0, 1, dur(200), "easeOutCubic", delay + dur(200));
+          animator.addTween(event.weaponId, "glow", 1, 0, dur(300), "easeInCubic", delay + dur(400));
+          animator.addTween(event.weaponId, "scaleX", 1, 1.12, dur(150), "easeOutCubic", delay + dur(200));
+          animator.addTween(event.weaponId, "scaleY", 1, 1.12, dur(150), "easeOutCubic", delay + dur(200));
+          animator.addTween(event.weaponId, "scaleX", 1.12, 1, dur(200), "easeOutBack", delay + dur(350));
+          animator.addTween(event.weaponId, "scaleY", 1.12, 1, dur(200), "easeOutBack", delay + dur(350));
+        }
+        // Slain monsters slide to discard (degradation cleared)
+        if (prevState.slainByWeapon) {
+          for (let i = 0; i < prevState.slainByWeapon.length; i++) {
+            const sid = prevState.slainByWeapon[i];
+            const sx = layout.slainStack.x + i * layout.slainStack.offsetX;
+            animator.initCard(sid, sx, layout.slainStack.y);
+            animator.addTween(sid, "x", sx, honeTo.x, dur(400), "easeOutCubic", delay + dur(50));
+            animator.addTween(sid, "y", layout.slainStack.y, honeTo.y, dur(400), "easeOutCubic", delay + dur(50));
+            animator.addTween(sid, "opacity", 1, 0, dur(350), "linear", delay + dur(50));
+          }
+        }
+        audio?.play("weaponHone");
+        delay += dur(450);
+        break;
+      }
+
       case "WEAPON_DISCARDED": {
         // Old weapon + slain monsters slide to discard
         const from = layout.weaponSlot;

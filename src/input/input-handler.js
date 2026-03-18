@@ -1,7 +1,7 @@
 // Input handler — routes clicks based on current screen.
 // Supports gameplay, menus, undo, replay, hover preview, settings.
 
-import { canUseWeapon, calculateWeaponDamage, calculateBarehandedDamage } from "../logic/combat.js";
+import { canUseWeapon, canHoneWeapon, calculateWeaponDamage, calculateBarehandedDamage } from "../logic/combat.js";
 import { typeFromId, rankFromId } from "../logic/card.js";
 import { canAvoidRoom } from "../logic/turn.js";
 
@@ -175,6 +175,31 @@ export function setupInputHandler(canvas, getState, getLayout, getCardRegistry, 
       return;
     }
 
+    // Weapon equip vs hone choice prompt
+    if (vs.showWeaponChoice !== null) {
+      const cardIndex = vs.showWeaponChoice;
+      if (vs.equipButtonRect && hitTest(x, y, vs.equipButtonRect)) {
+        vs.showWeaponChoice = null;
+        vs.equipButtonRect = null;
+        vs.honeButtonRect = null;
+        audio?.play("buttonClick");
+        onCommand({ type: "SELECT_CARD", payload: { cardIndex } });
+        return;
+      }
+      if (vs.honeButtonRect && hitTest(x, y, vs.honeButtonRect)) {
+        vs.showWeaponChoice = null;
+        vs.equipButtonRect = null;
+        vs.honeButtonRect = null;
+        audio?.play("buttonClick");
+        onCommand({ type: "HONE_WEAPON", payload: { cardIndex } });
+        return;
+      }
+      vs.showWeaponChoice = null;
+      vs.equipButtonRect = null;
+      vs.honeButtonRect = null;
+      return;
+    }
+
     // Potion waste confirmation prompt
     if (vs.showPotionWasteChoice !== null) {
       const cardIndex = vs.showPotionWasteChoice;
@@ -220,9 +245,12 @@ export function setupInputHandler(canvas, getState, getLayout, getCardRegistry, 
 
         if (cardType === "monster") {
           onCommand({ type: "FIGHT_BAREHANDED", payload: { cardIndex: i } });
-        } else if (cardType === "potion" && state.potionUsedThisTurn) {
-          // Show waste confirmation
+        } else if (cardType === "potion") {
+          // Show potion confirmation (waste warning or first-use confirmation)
           vs.showPotionWasteChoice = i;
+          audio?.play("buttonClick");
+        } else if (cardType === "weapon" && state.equippedWeapon && canHoneWeapon(state, cardId)) {
+          vs.showWeaponChoice = i;
           audio?.play("buttonClick");
         } else {
           onCommand({ type: "SELECT_CARD", payload: { cardIndex: i } });

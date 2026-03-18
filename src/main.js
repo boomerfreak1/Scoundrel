@@ -76,6 +76,9 @@ const visualState = {
   barehandedButtonRect: null,
   potionUseAnywayRect: null,
   potionCancelRect: null,
+  showWeaponChoice: null,
+  equipButtonRect: null,
+  honeButtonRect: null,
   displayHealth: 20,
   hoverCardIndex: null,
   settings: {
